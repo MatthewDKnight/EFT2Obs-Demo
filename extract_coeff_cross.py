@@ -75,48 +75,87 @@ def extractCoeff(hists):
 			coeffs[j][i-1][0]=A
 			coeffs[j][i-1][1]=B
 
-	return coeffs
+	#extract cross terms
+	cross_terms = np.zeros((no_bins, no_params, no_params))
+
+	counter = 1 + no_params*2
+	for i in range(no_params):
+		for j in range(no_params):
+			#print(i, j)
+			#print(counter)
+			if i!=j and j>i:
+				step1 = pars[i]['step']
+				step2 = pars[j]['step']
+				for k in range(no_bins):
+					mu = bin_values[counter][k]
+				
+					#remove linear and quadratic (not cross) terms
+					mu += -coeffs[k][i][0]*step1 -coeffs[k][i][1]*step1**2 -coeffs[k][j][0]*step2 - coeffs[k][j][1]*step2**2
+					cross_term = mu / (step1*step2)
+ 					print(cross_term)	
+					cross_terms[k][i][j] = cross_term
+				counter += 1
+
+	return coeffs, cross_terms
 		
-def writeTextFile(coeffs):
+def writeTextFile(coeffs, cross_terms):
 	with open("equations.txt", "w") as file:
-		for j in range(len(coeffs)):
-			bin = coeffs[j]
+		for j in range(len(coeffs)): #for each bin
+			bin = coeffs[j]	     #the A and B coeffs for every parameter for this bin
 			string = "%s:1"%bin_names[j]
-			for i in range(len(bin)):
-				param_name = param_convert[pars[i]['name']]
+
+			for i in range(len(bin)): #for each parameter
+				param_name = param_convert[pars[i]['name']] #convert naming convention
+				#extract A and B coefficients for this parameter and bin
 				A = bin[i][0]
 				B = bin[i][1]
+
 				#make exception for cG and cA parameters
 				if param_name in ["cG","tcG", "cA"]:
 					A = A / (4*np.pi)**2
 					B = B / (4*np.pi)**4
-				if A>0:
-					string += " + %f * %s"%(A, param_name)
-				else:
-					string += " %f * %s"%(A, param_name)
-				if B>0:
-					string += " + %f * %s * %s"%(B, param_name, param_name)
-				else:
-					string += " %f * %s * %s"%(B, param_name, param_name)
+				if abs(A) > 10e-5:
+					if A>0:
+						string += " + %f * %s"%(A, param_name)
+					elif A<0:
+						string += " %f * %s"%(A, param_name)
+				if abs(B) > 10e-5:
+					if B>0:
+						string += " + %f * %s * %s"%(B, param_name, param_name)
+					elif B<0:
+						string += " %f * %s * %s"%(B, param_name, param_name)
+			
+				#lets add the cross terms
+				for k in range(len(bin)): #for every parameter
+					cross_term = cross_terms[j][i][k]
+					if abs(cross_term) > 10e-5:
+						param_name2 = param_convert[pars[k]['name']]
+						if param_name in ["cG", "tcG", "cA"]:
+							cross_term = cross_term / (4*np.pi)**2
+						if param_name2 in ["cG", "tcG", "cA"]:
+							cross_term = cross_term / (4*np.pi)**2
+						if cross_term > 0:
+							string += " + %f * %s * %s"%(cross_term, param_name, param_name2) 
+						elif cross_term < 0:	
+							string += " %f * %s * %s"%(cross_term, param_name, param_name2)	
 			string += "\n"		
 			file.write(string)
 
 def getHistNumber(hist):
-	split_str = hist.name.split("w")[1]
-	split_str = split_str[:len(split_str)-1]
-	return int(split_str)
+        split_str = hist.name.split("w")[1]
+        split_str = split_str[:len(split_str)-1]
+        return int(split_str)
 
 def orderHists(hists):
-	ordered = False
-	while ordered==False:
-		ordered=True
-		for i in range(len(hists)-1):
-			if getHistNumber(hists[i]) > getHistNumber(hists[i+1]):
-				#swap histograms
-				ordered = False
-				hists[i], hists[i+1] = hists[i+1], hists[i]
-	return hists
-		
+        ordered = False
+        while ordered==False:
+                ordered=True
+                for i in range(len(hists)-1):
+                        if getHistNumber(hists[i]) > getHistNumber(hists[i+1]):
+                                #swap histograms
+                                ordered = False
+                                hists[i], hists[i+1] = hists[i+1], hists[i]
+        return hists
 
 aos = yoda.read("Rivet.yoda", asdict = False)
 hists = [h for h in aos if h.path.startswith("/HiggsTemplateCrossSectionsStage1/pT_Higgs")]
@@ -132,7 +171,7 @@ bin_names = ["GG2H_PTH_0_20", "GG2H_PTH_20_45", "GG2H_PTH_45_80", "GG2H_PTH_80_1
 with open("config.json") as jsonfile:
 	pars = json.load(jsonfile)
 
-coeffs = extractCoeff(hists)
-writeTextFile(coeffs)
+coeffs, cross_terms = extractCoeff(hists)
+writeTextFile(coeffs, cross_terms)
 
 #plot(hists[0])
