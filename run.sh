@@ -10,9 +10,11 @@ if [[ $# -lt 1 ]]; then
 fi
 
 PROCESS=$1
+SAVEDIR=$2
 
 ### SET ENVIRONMENT VARIABLES HERE
 RUNLABEL="pilotrun"
+TMPDIR=/home/hep/mdk16/Masters/EFT2Obs-Demo2
 ###
 
 cp cards/${PROCESS}/{param,reweight,run,pythia8}_card.dat ${MG_DIR}/${PROCESS}/Cards/
@@ -32,5 +34,7 @@ if [ -d "${MG_DIR}/${PROCESS}/Events/${RUNLABEL}" ]; then rm -r ${MG_DIR}/${PROC
 ./bin/generate_events pilotrun < mgrunscript
 popd
 
-rivet --analysis=HiggsTemplateCrossSectionsStage1 "${TMPDIR}/fifo.hepmc" -o Rivet.yoda
-# yoda2root Rivet.yoda
+#rivet -v --analysis=HiggsTemplateCrossSectionsStage1 "${TMPDIR}/fifo.hepmc" -o Rivet.yoda
+rivet -v --analysis=SimpleHiggs "${TMPDIR}/fifo.hepmc" -o "${SAVEDIR}.yoda"
+python save_info.py ${SAVEDIR}
+#yoda2root -t Rivet.yoda

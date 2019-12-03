@@ -1,28 +1,21 @@
 launch --rwgt_name=rw0
-set newcoup 12 0
-set newcoup 30 0
-set newcoup 33 0
+set newcoup 7 0
 launch --rwgt_name=rw1
-set newcoup 12 5e-05
-set newcoup 30 0
-set newcoup 33 0
+set newcoup 7 0.0001
 launch --rwgt_name=rw2
-set newcoup 12 0.0001
-set newcoup 30 0
-set newcoup 33 0
+set newcoup 7 0.001
 launch --rwgt_name=rw3
-set newcoup 12 0
-set newcoup 30 5e-05
-set newcoup 33 0
+set newcoup 7 0.01
 launch --rwgt_name=rw4
-set newcoup 12 0
-set newcoup 30 0.0001
-set newcoup 33 0
+set newcoup 7 0.1
 launch --rwgt_name=rw5
-set newcoup 12 0
-set newcoup 30 0
-set newcoup 33 5e-05
+set newcoup 7 0.2
 launch --rwgt_name=rw6
-set newcoup 12 0
-set newcoup 30 0
-set newcoup 33 0.0001
+set newcoup 7 0.4
+launch --rwgt_name=rw7
+set newcoup 7 0.6
+launch --rwgt_name=rw8
+set newcoup 7 0.8
+launch --rwgt_name=rw9
+set newcoup 7 1
+

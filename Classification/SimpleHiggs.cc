@@ -6,6 +6,7 @@
 #include "Rivet/Projections/MissingMomentum.hh"
 #include "Rivet/Projections/PromptFinalState.hh"
 #include "HepMC/GenParticle.h"
+#include <iostream>
 
 using HepMC::GenParticle;
 using HepMC::GenVertex;
@@ -26,6 +27,8 @@ namespace Rivet {
   const double lep_cone_size = 0.1;
 
   const bool acceptance_on = 1;
+
+  bool cuts [8];
 
   double m_sumw;
 
@@ -106,6 +109,56 @@ namespace Rivet {
         Particles ptcls = {p2}; return originateFrom(p,ptcls);
     }
 
+    void setCuts(const Event& event, Particles leptons, FourMomentum LL, double trailing_lep_mT, double higgs_mT) {
+	//find extra variables for cutting                                      
+	/*             
+        Particles leptons = apply<DressedLeptons>(event, "leptons").particlesByPt(); 
+        FourMomentum LL = (leptons[0].momentum() + leptons[1].momentum());
+                                                                                     
+        FourMomentum p_miss = apply<MissingMomentum>(event, "Met").missingMomentum();
+                                                                                     
+        double dphi = deltaPhi(leptons[1], p_miss);
+        double trailing_lep_mT = sqrt(2*leptons[1].pT()*p_miss.pT() * (1-cos(dphi)));
+                                                                                     
+        dphi = deltaPhi(LL, p_miss);
+        double higgs_mT = sqrt(2*LL.pT()*p_miss.pT() * (1-cos(dphi)));               
+	*/
+
+	//set cuts	
+	cuts[0] = (leptons[0].charge() == leptons[1].charge()) || (leptons[0].abspid() == leptons[1].abspid());
+	cuts[1] = leptons[0].pT() < leading_lep_min_pT;
+	cuts[2] = leptons[1].pT() < trailing_lep_min_pT;
+	cuts[3] = (leptons[0].abseta() > lep_max_eta || leptons[1].abseta() > lep_max_eta);
+	cuts[4] = LL.mass() < dilep_min_mass;
+	cuts[5] = LL.pT() < dilep_min_pT;
+	cuts[6] = trailing_lep_mT < trailing_lep_min_mT;
+	cuts[7] = higgs_mT < higgs_min_mT;
+    }
+
+    //goes through cuts, if event failed any cuts, vetoEvent
+    void applyVeto() {
+	for (bool cut : cuts) {
+		if (cut) vetoEvent;
+	}
+    }
+
+    bool checkCuts() {
+	for (bool cut : cuts) {
+		if (cut) return true;
+	}
+	return false;
+    }
+
+    //checks all cuts with one exception
+    bool checkCutsException(int exception_index) {
+    	for (int i = 0; i < 8; i++) {
+		if (i != exception_index) {
+			if (cuts[i] == true) return true;
+		}
+	}
+	return false;	
+    }
+
     /// Perform the per-event analysis
     void analyze(const Event& event) {
 
@@ -145,50 +198,30 @@ namespace Rivet {
       double trailing_lep_mT = sqrt(2*leptons[1].pT()*p_miss.pT() * (1-cos(dphi)));
                                                                                    
       dphi = deltaPhi(LL, p_miss);
-      double higgs_mT = sqrt(2*LL.pT()*p_miss.pT() * (1-cos(dphi)));
+      double higgs_mT = sqrt(2*LL.pT()*p_miss.pT() * (1-cos(dphi)));               
 
-      leading_lep_PT->fill(leptons[0].pT()/GeV);
-      trailing_lep_PT->fill(leptons[1].pT()/GeV);
-      leading_lep_eta->fill(leptons[0].abseta());
-      trailing_lep_eta->fill(leptons[1].abseta());
-      dilep_mass->fill(LL.mass()/GeV);
-      dilep_PT->fill(LL.pT()/GeV);
-      trailing_lep_mT_hist->fill(trailing_lep_mT/GeV);
-      higgs_mT_hist->fill(higgs_mT/GeV);
+
+
+      //angular separation of two leptons
+      dphi = deltaPhi(leptons[0], leptons[1]);
+
+      //find which cuts event passes/fails
+      setCuts(event, leptons, LL, trailing_lep_mT, higgs_mT);
+
+      //fill each histogram with events that pass all but the one cut associated with variable
+      if (!checkCutsException(1)) leading_lep_PT->fill(leptons[0].pT()/GeV);
+      if (!checkCutsException(2)) trailing_lep_PT->fill(leptons[1].pT()/GeV);
+      if (!checkCutsException(3)) leading_lep_eta->fill(leptons[0].abseta());
+      if (!checkCutsException(3)) trailing_lep_eta->fill(leptons[1].abseta());
+      if (!checkCutsException(4)) dilep_mass->fill(LL.mass()/GeV);
+      if (!checkCutsException(5)) dilep_PT->fill(LL.pT()/GeV);
+      if (!checkCutsException(6)) trailing_lep_mT_hist->fill(trailing_lep_mT/GeV);
+      if (!checkCutsException(7)) higgs_mT_hist->fill(higgs_mT/GeV);
       dphi_hist->fill(dphi);
       cos_dphi->fill(cos(dphi));
 
-      //if applying acceptance, make cuts now 
-      if (acceptance_on) {  
-          lepton_no->fill(leptons.size());                                                                                                  
-          if (leptons[0].charge() == leptons[1].charge()) {
-              acceptance->fill(0);
-              vetoEvent; }
-          if (leptons[0].abspid() == leptons[1].abspid()) {
-              acceptance->fill(0);
-              vetoEvent; }
-          if (leptons[0].pT() < leading_lep_min_pT || leptons[1].pT() < trailing_lep_min_pT) {
-              acceptance->fill(1);
-              vetoEvent; }
-          if (leptons[0].abseta() > lep_max_eta || leptons[1].abseta() > lep_max_eta) {
-              acceptance->fill(2);
-              vetoEvent; }
-                                                                                                       
-          if (LL.mass() < dilep_min_mass) {
-              acceptance->fill(3);
-              vetoEvent; }
-          if (LL.pT() < dilep_min_pT) {
-              acceptance->fill(4);
-              vetoEvent; }
-  
-          if (trailing_lep_mT < trailing_lep_min_mT) {
-              acceptance->fill(5);
-              vetoEvent; }
-          if (higgs_mT < higgs_min_mT) {
-              acceptance->fill(6);
-              vetoEvent; }
-          }
-
+      //vetoEvent if event fails any of the cuts
+      if (checkCuts()) vetoEvent;    
       
       //fill histograms (if event not been vetoed)       
       acc_H_PT->fill(higgs.pT()/GeV);                                                                   
