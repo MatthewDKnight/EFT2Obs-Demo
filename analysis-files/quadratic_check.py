@@ -1,47 +1,68 @@
 import matplotlib.pyplot as plt
 import yoda
 import numpy as np
+import sys
+import scipy.optimize as spo
 
-aos=yoda.read("SimpleHiggs.yoda", asdict=False)
+def getHistNumber(hist):
+        split_str = hist.name.split("w")[1]
+        split_str = split_str[:len(split_str)-1]
+        return int(split_str)
 
-xs_list=[]
-for i in aos:
-	#if 'H_PT[rw' in i.name:
-	if i.path.startswith("/SimpleHiggs/H_PT"):
-		print i.name
-		xs_list.append(i.sumW())
+def orderHists(hists):
+        ordered = False
+        while ordered==False:
+                ordered=True
+                for i in range(len(hists)-1):
+                        if getHistNumber(hists[i]) > getHistNumber(hists[i+1]):
+                                #swap histograms
+                                ordered = False
+                                hists[i], hists[i+1] = hists[i+1], hists[i]
+        return hists
+
+def quad(x, a, b):
+	return 1 + a*x + b*x**2
+
+aos=yoda.read(sys.argv[1], asdict=False)
+
+#grabs all H_PT histograms (all the reweightings)
+hists = []
+for hist in aos:
+	if hist.path.startswith("/SimpleHiggs/H_PT"):
+		hists.append(hist)	
 		
-xs_list=xs_list[1:]
+hists = hists[1:] #remove first histogram
+hists = orderHists(hists) #orders them in terms of reweighting number
 
+#get cross sections from each histogram and calculate the scaling, mu
+xs = []
+for hist in hists:
+	xs.append(hist.sumW())
+xs = np.array(xs)
+mu = xs/xs[0]
 
-#cWW_values=[10**(i) for i in range(-4, 1)]
-#cHW_values=[0., 0.5, 1.]
-cWW_xs_values=xs_list
-#cHW_xs_values=[xs_list[0], xs_list[3], xs_list[4]]
-cWW_values = [0,0.0001,0.001,0.01,0.1,0.2,0.4,0.6,0.8,1]
-cWW_xs_values = np.array(cWW_xs_values)
+#default param values to sample
+param_vals = [0.1*i for i in range(11)]
+param_vals = np.array(param_vals)
 
-#cWW_xs_values[-1] += 10
-#cWW_xs_values[-2] += -5
-#cWW_xs_values[-3] += -2
+#find error in each cross section from total number of events and assume poisson
+no_events = hists[0].numEntries()
 
-error = 1e-2 * cWW_xs_values
-print error
+error = 1/np.sqrt(no_events) * mu
 
-plt.errorbar(cWW_values, cWW_xs_values, error, fmt = 'o')
+#plot cross section points + a fitted quadratic
+plt.errorbar(param_vals, mu, error, fmt = 'o')
 plt.xlabel('cWW')
-plt.ylabel('Cross-section')
-#plt.savefig('cWW_cross-section_plot.png')
-#plt.show()
-#plt.clf()
+plt.ylabel('Scaling, mu(cWW)')
 
-#plt.plot(cHW_values, cHW_xs_values)
-#plt.xlabel('cHW')
-#plt.ylabel('Cross-section')
-#plt.savefig('cHW_cross-section_plot.png')
-
+popt, pcov = spo.curve_fit(quad, param_vals, mu)
 x = np.linspace(0,1,10000)
+y = quad(x, popt[0], popt[1])
 
-p = np.polyfit(cWW_values[-3:], cWW_xs_values[-3:], 2)
-plt.plot(x, np.polyval(p,x))
+e = quad(param_vals, popt[0], popt[1])
+chi2 = np.sum( (mu-e)**2/error**2 )
+print chi2
+
+plt.plot(x, y)
+plt.savefig("quad_validate.png")
 plt.show()
