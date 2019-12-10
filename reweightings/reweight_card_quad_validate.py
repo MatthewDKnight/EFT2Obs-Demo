@@ -1,3 +1,9 @@
+"""
+Generates the reweight card for the the validation of the quadratic
+approximation. For each parameter c_j, there will be 11 reweightings
+with c_j = 0,0.1,0.2,...,1, and all other parameters set to 0.
+"""
+
 import json
 import sys
 
@@ -21,12 +27,19 @@ current_i = 0
 output.extend(PrintBlock(pars, initvals, 'rw%s' % current_i))
 current_i += 1
 
-for i in xrange(len(pars)):
-    vals = list(initvals)
-    for j in range(5):
-       vals[i] = pars[i]['step']*10**j
-       output.extend(PrintBlock(pars, vals, 'rw%s' % current_i))
-       current_i += 1
+#for i in xrange(len(pars)):
+#    vals = list(initvals)
+#    for j in range(5):
+#       vals[i] = pars[i]['step']*10**j
+#       output.extend(PrintBlock(pars, vals, 'rw%s' % current_i))
+#       current_i += 1
+
+for i in range(len(pars)):
+	vals = list(initvals)
+	for j in range(1,11):
+		vals[i] = j*0.1
+		output.extend(PrintBlock(pars, vals, 'rw%s' % current_i))
+		current_i += 1
 
 print '\n'.join(output)
 
