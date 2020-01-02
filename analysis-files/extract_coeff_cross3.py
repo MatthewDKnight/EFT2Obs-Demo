@@ -194,6 +194,9 @@ bin_names.append("Total")
 coeffs, cross_terms = extractCoeff(H_PT_hists)
 writeTextFile(coeffs, cross_terms, "decay_estimated_default.txt")
 
+coeffs, cross_terms = extractCoeff(acc_H_PT_hists)
+writeTextFile(coeffs, cross_terms, "decay_estimated_default_acceptance.txt")
+
 bin_edges = [0,1,2,3,4]
 bin_names = ["0j", "1j", "2j", "3j", ">3j"]
 bin_names.append("Total")
@@ -201,8 +204,6 @@ bin_names.append("Total")
 coeffs2, cross_terms2 = extractCoeff(N_jets_hists)
 writeTextFile(coeffs2, cross_terms2, "decay_estimated_default.txt")
 
-#coeffs, cross_terms = extractCoeff(acc_H_PT_hists)
-#writeTextFile(coeffs, cross_terms, "equations_acc.txt")
+coeffs2, cross_terms2 = extractCoeff(acc_N_jets_hists)
+writeTextFile(coeffs2, cross_term2, "decay_estimated_acceptance.txt")
 
-
-#plot(hists[0])
