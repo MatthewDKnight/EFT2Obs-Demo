@@ -92,11 +92,35 @@ def minimize_f_sum(process_name, POIs):
         	B=functions[process_name][1]
 	else:
 		print ("Process name not in list of known processes")
-	init=[10**i for i in scaling_list]
-	min_loc = scipy.optimize.minimize(f_sum, init, args=[A, B])
-	f_min=f_sum(min_loc.x, [A, B])
-	return min_loc.x, f_min
-print (minimize_f_sum('hzz', ['cWWMinuscB', 'cHW']))
+	for a in range(len(A)):
+		if A[a]==0:
+			A[a]=0.1
+		for b in range(len(A)):
+			if B[a][b]==0:
+				B[a][b]=0.1 
+	estimates=[0 for i in range(len(scaling_list))]
+	f_min=9999
+	for i in range(-2,3):
+		guess=10**i
+		init=[guess for j in range(len(scaling_list))]
+		min_loc = scipy.optimize.minimize(f_sum, init, args=[A, B], tol=1e-8)
+		if f_sum(min_loc.x, [A, B])<f_min:
+			estimates=min_loc.x
+			f_min=f_sum(estimates, [A, B])
+			
+	#f_min=f_sum(min_loc.x, [A, B])
+	scalings=[10**i for i in scaling_list]
+	name_ordering=[i.split('_')[0] for i in name_ordering]
+	for i in range(len(name_ordering)):
+		print(name_ordering[i])
+		print(f_INT(min_loc.x, A, B, i))
+		for j in range(len(name_ordering)):
+			print(name_ordering[i])
+			print(name_ordering[j])
+			print(f_BSM(min_loc.x, A, B, i, j))
+	return min_loc.x, f_min, name_ordering
+print (minimize_f_sum('hww', ['cWWMinuscB', 'cHW', 'tcHW']))
+
 #plt.plot(x,f_sum)
 #plt.plot([min_loc,min_loc],[0,1])
 #plt.ylim(0,1)
