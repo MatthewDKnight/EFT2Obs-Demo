@@ -1,0 +1,13 @@
+GG2H_PTH_0_20:1 + 10.235516 * cWW + 26.210213 * cWW * cWW + 19.145501 * cWW * cHW + 0.098927 * cWW * tcHW + 3.723087 * cHW + 3.751219 * cHW * cHW + 0.024827 * cHW * tcHW + 0.019833 * tcHW + 0.318745 * tcHW * tcHW
+GG2H_PTH_20_45:1 + 10.233279 * cWW + 26.200833 * cWW * cWW + 19.185999 * cWW * cHW + 0.025514 * cWW * tcHW + 3.730338 * cHW + 3.781546 * cHW * cHW + 0.013328 * cHW * tcHW + 0.005093 * tcHW + 0.324252 * tcHW * tcHW
+GG2H_PTH_45_80:1 + 10.238907 * cWW + 26.227472 * cWW * cWW + 19.231281 * cWW * cHW -0.091556 * cWW * tcHW + 3.738937 * cHW + 3.782218 * cHW * cHW -0.030974 * cHW * tcHW -0.018075 * tcHW + 0.324271 * tcHW * tcHW
+GG2H_PTH_80_120:1 + 10.240855 * cWW + 26.238587 * cWW * cWW + 19.454258 * cWW * cHW -0.035679 * cWW * tcHW + 3.780564 * cHW + 3.840588 * cHW * cHW -0.024278 * cHW * tcHW -0.005197 * tcHW + 0.313794 * tcHW * tcHW
+GG2H_PTH_120_200:1 + 10.233594 * cWW + 26.205398 * cWW * cWW + 19.039008 * cWW * cHW -0.240806 * cWW * tcHW + 3.698525 * cHW + 3.736266 * cHW * cHW -0.068539 * cHW * tcHW -0.048251 * tcHW + 0.308168 * tcHW * tcHW
+GG2H_PTH_GT200:1 + 10.204103 * cWW + 26.056243 * cWW * cWW + 18.533142 * cWW * cHW + 0.032780 * cWW * tcHW + 3.611387 * cHW + 3.602815 * cHW * cHW + 0.012538 * cHW * tcHW + 0.007605 * tcHW + 0.353693 * tcHW * tcHW
+Total:1 + 10.234815 * cWW + 26.207832 * cWW * cWW + 19.177422 * cWW * cHW + 0.002515 * cWW * tcHW + 3.728709 * cHW + 3.769270 * cHW * cHW -0.000665 * cHW * tcHW + 0.000786 * tcHW + 0.321503 * tcHW * tcHW
+0j:1 + 10.234235 * cWW + 26.204910 * cWW * cWW + 19.156066 * cWW * cHW + 0.048182 * cWW * tcHW + 3.724834 * cHW + 3.760806 * cHW * cHW + 0.014965 * cHW * tcHW + 0.009682 * tcHW + 0.319223 * tcHW * tcHW
+1j:1 + 10.232975 * cWW + 26.199048 * cWW * cWW + 19.185856 * cWW * cHW -0.088629 * cWW * tcHW + 3.730610 * cHW + 3.775781 * cHW * cHW -0.029444 * cHW * tcHW -0.016977 * tcHW + 0.322609 * tcHW * tcHW
+2j:1 + 10.246107 * cWW + 26.262140 * cWW * cWW + 19.285518 * cWW * cHW -0.075191 * cWW * tcHW + 3.748246 * cHW + 3.801333 * cHW * cHW -0.021763 * cHW * tcHW -0.014899 * tcHW + 0.330352 * tcHW * tcHW
+3j:1 + 10.245012 * cWW + 26.262142 * cWW * cWW + 19.402696 * cWW * cHW + 0.089699 * cWW * tcHW + 3.766817 * cHW + 3.824181 * cHW * cHW + 0.017412 * cHW * tcHW + 0.017653 * tcHW + 0.310590 * tcHW * tcHW
+>3j:1 + 10.181220 * cWW + 25.950432 * cWW * cWW + 18.452906 * cWW * cHW + 0.611410 * cWW * tcHW + 3.595062 * cHW + 3.591154 * cHW * cHW + 0.108064 * cHW * tcHW + 0.125112 * tcHW + 0.361492 * tcHW * tcHW
+Total:1 + 10.234815 * cWW + 26.207832 * cWW * cWW + 19.177422 * cWW * cHW + 0.002515 * cWW * tcHW + 3.728709 * cHW + 3.769270 * cHW * cHW -0.000665 * cHW * tcHW + 0.000786 * tcHW + 0.321503 * tcHW * tcHW
