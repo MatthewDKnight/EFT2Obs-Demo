@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import json
 from parameter_conversion import params as param_convert #dictionary to switch naming conventions
+import sys
 
 def getBins(hist):
 	bin_values = []
@@ -12,7 +13,7 @@ def getBins(hist):
 	
 	overflow = hist.overflow.sumW
 	bin_values.append(overflow)
-        #bin_values.append(hist.sumW())
+        bin_values.append(hist.sumW())
 	return bin_values
 	
 
@@ -39,12 +40,12 @@ def plot(hist):
 def extractCoeff(hists_no_acc, hists_acc):
 	bin_values_no_acc = [getBins(hist) for hist in hists_no_acc] #values of bins for each reweighting
 	bin_values_no_acc = np.array(bin_values_no_acc)
-	bin_values_no_acc = bin_values_no_acc/bin_values_no_acc[0] #divide by SM value -> yields
+	#bin_values_no_acc = bin_values_no_acc/bin_values_no_acc[0] #divide by SM value -> yields
 	#bin_values_no_acc = bin_values_no_acc - 1 #now left with INT and BSM terms
 
 	bin_values_acc = [getBins(hist) for hist in hists_acc] #values of bins for each reweighting
 	bin_values_acc = np.array(bin_values_acc)
-	bin_values_acc = bin_values_acc/bin_values_acc[0] #divide by SM value -> yields
+	#bin_values_acc = bin_values_acc/bin_values_acc[0] #divide by SM value -> yields
 	#bin_values_acc = bin_values_acc - 1 #now left with INT and BSM terms
 
 
@@ -58,12 +59,13 @@ def extractCoeff(hists_no_acc, hists_acc):
 	
 	#print(no_params)
 	#print(no_bins)
-	#print(bin_values_acc)
-	#print(bin_values_no_acc)
+	print(bin_values_acc)
+	print(bin_values_no_acc)
         acceptance_values=bin_values_acc/bin_values_no_acc
+	print(acceptance_values)
 	acceptance_values=acceptance_values/acceptance_values[0]
 	acceptance_values=acceptance_values-1
-	#print(acceptance_values)
+	print(acceptance_values)
 
 	
 
@@ -220,7 +222,7 @@ def orderHists(hists):
                                 hists[i], hists[i+1] = hists[i+1], hists[i]
         return hists
 
-aos = yoda.read("SimpleHiggs.yoda", asdict = False)
+aos = yoda.read(sys.argv[1], asdict = False)
 H_PT_hists = [h for h in aos if h.path.startswith("/SimpleHiggs/H_PT")]
 H_PT_hists = H_PT_hists[1:] #get rid of first histogram
 
@@ -233,13 +235,20 @@ N_jets_hists = N_jets_hists[1:] #get rid of first histogram
 acc_N_jets_hists = [h for h in aos if h.path.startswith("/SimpleHiggs/acc_N_jets")]
 acc_N_jets_hists = acc_N_jets_hists[1:] #get rid of first histogram
 
-
 #have to order histograms with rw0 at start
 H_PT_hists = orderHists(H_PT_hists)
 acc_H_PT_hists = orderHists(acc_H_PT_hists)
 N_jets_hists = orderHists(N_jets_hists)
 acc_N_jets_hists = orderHists(acc_N_jets_hists)
 
+#use SM only yoda file for first histograms
+filename = sys.argv[1].split(".")[0]+"_SM.yoda"
+aos_SM = yoda.read(filename, asdict=False)
+H_PT_hists[0] = [h for h in aos_SM if h.path.startswith("/SimpleHiggs/H_PT")][0]
+print(H_PT_hists[0])
+acc_H_PT_hists[0] = [h for h in aos_SM if h.path.startswith("/SimpleHiggs/acc_H_PT")][0]
+N_jets_hists[0] = [h for h in aos_SM if h.path.startswith("/SimpleHiggs/N_jets")][0]
+acc_N_jets_hists[0] = [h for h in aos_SM if h.path.startswith("/SimpleHiggs/acc_N_jets")][0]
 
 #Bins for pT are 0,20,45,80,120,200
 bin_edges = [0,20,45,80,120,200]
