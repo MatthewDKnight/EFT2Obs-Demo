@@ -111,7 +111,7 @@ with open("single_default_combined.txt", "w") as file:
 		for i in range(len(combined_split_equations)):
 			split_equation = combined_split_equations[i]
 
-			string = "%s :1"%(prod_bin_names[i])
+			string = "%s:1"%(prod_bin_names[i])
 
 			for j in range(len(split_equation)):
 				term = split_equation[j]
