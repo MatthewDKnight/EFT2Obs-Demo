@@ -86,7 +86,7 @@ Determine the maximum acceptance for each bin.
 pt_bin_edges = [0,20,45,80,120,200]
 pt_bin_names = ["GG2H_PTH_0_20", "GG2H_PTH_20_45", "GG2H_PTH_45_80", "GG2H_PTH_80_120", "GG2H_PTH_120_200", "GG2H_PTH_GT200"]
 njet_bin_edges = [0,1,2,3,4]
-njet_bin_names = ["0j", "1j", "2j", "3j", ">3j"]
+njet_bin_names = ["GG2H_NJETS_0", "GG2H_NJETS_1", "GG2H_NJETS_2", "GG2H_NJETS_3", "GG2H_NJETS_GT3"]
 
 bin_names = pt_bin_names + njet_bin_names
 
