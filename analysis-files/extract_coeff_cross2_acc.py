@@ -92,6 +92,9 @@ def extractCoeff(hists_no_acc, hists_acc):
 	cross_terms = np.zeros((no_bins, no_params, no_params))
 
 	counter = 1 + no_params*2
+	print(counter)
+	print(no_bins)
+	print(len(acceptance_values))
 	for i in range(no_params):
 		for j in range(no_params):
 			#print(i, j)
@@ -222,7 +225,7 @@ def orderHists(hists):
                                 hists[i], hists[i+1] = hists[i+1], hists[i]
         return hists
 
-aos = yoda.read(sys.argv[1], asdict = False)
+aos = yoda.read("../acceptance_equations_3.yoda", asdict = False)
 H_PT_hists = [h for h in aos if h.path.startswith("/SimpleHiggs/H_PT")]
 H_PT_hists = H_PT_hists[1:] #get rid of first histogram
 
@@ -255,11 +258,11 @@ bin_edges = [0,20,45,80,120,200]
 bin_names = ["GG2H_PTH_0_20", "GG2H_PTH_20_45", "GG2H_PTH_45_80", "GG2H_PTH_80_120", "GG2H_PTH_120_200", "GG2H_PTH_GT200"] 
 bin_names.append("Total")
 
-with open("config.json") as jsonfile:
+with open("../config.json") as jsonfile:
 	pars = json.load(jsonfile)
 
 coeffs, cross_terms = extractCoeff(H_PT_hists, acc_H_PT_hists)
-writeTextFile(coeffs, cross_terms, "equations.txt")
+writeTextFile(coeffs, cross_terms, "../acceptance_equations_3.txt")
 
 #coeffs, cross_terms = extractCoeff(acc_H_PT_hists)
 #writeTextFile(coeffs, cross_terms, "equations_acc.txt")
