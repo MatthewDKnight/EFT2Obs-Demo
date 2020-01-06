@@ -26,7 +26,7 @@ namespace Rivet {
 
   const double lep_cone_size = 0.1;
 
-  const bool acceptance_on = 1;
+  const bool acceptance_on = 0;
 
   bool cuts [8];
 
@@ -188,44 +188,47 @@ namespace Rivet {
       H_PT->fill(higgs.pT()/GeV);
       N_jets->fill(jets30.size());
 
-      //find extra variables for cutting
-      Particles leptons = apply<DressedLeptons>(event, "leptons").particlesByPt();      
-      FourMomentum LL = (leptons[0].momentum() + leptons[1].momentum());
+     
+      if (acceptance_on) { 
+	      //find extra variables for cutting
+	      Particles leptons = apply<DressedLeptons>(event, "leptons").particlesByPt();      
+	      FourMomentum LL = (leptons[0].momentum() + leptons[1].momentum());
 
-      FourMomentum p_miss = apply<MissingMomentum>(event, "Met").missingMomentum();     
-                                                                                   
-      double dphi = deltaPhi(leptons[1], p_miss);
-      double trailing_lep_mT = sqrt(2*leptons[1].pT()*p_miss.pT() * (1-cos(dphi)));
-                                                                                   
-      dphi = deltaPhi(LL, p_miss);
-      double higgs_mT = sqrt(2*LL.pT()*p_miss.pT() * (1-cos(dphi)));               
+	      FourMomentum p_miss = apply<MissingMomentum>(event, "Met").missingMomentum();     
+											   
+	      double dphi = deltaPhi(leptons[1], p_miss);
+	      double trailing_lep_mT = sqrt(2*leptons[1].pT()*p_miss.pT() * (1-cos(dphi)));
+											   
+	      dphi = deltaPhi(LL, p_miss);
+	      double higgs_mT = sqrt(2*LL.pT()*p_miss.pT() * (1-cos(dphi)));               
 
 
 
-      //angular separation of two leptons
-      dphi = deltaPhi(leptons[0], leptons[1]);
+	      //angular separation of two leptons
+	      dphi = deltaPhi(leptons[0], leptons[1]);
 
-      //find which cuts event passes/fails
-      setCuts(event, leptons, LL, trailing_lep_mT, higgs_mT);
+	      //find which cuts event passes/fails
+	      setCuts(event, leptons, LL, trailing_lep_mT, higgs_mT);
 
-      //fill each histogram with events that pass all but the one cut associated with variable
-      if (!checkCutsException(1)) leading_lep_PT->fill(leptons[0].pT()/GeV);
-      if (!checkCutsException(2)) trailing_lep_PT->fill(leptons[1].pT()/GeV);
-      if (!checkCutsException(3)) leading_lep_eta->fill(leptons[0].abseta());
-      if (!checkCutsException(3)) trailing_lep_eta->fill(leptons[1].abseta());
-      if (!checkCutsException(4)) dilep_mass->fill(LL.mass()/GeV);
-      if (!checkCutsException(5)) dilep_PT->fill(LL.pT()/GeV);
-      if (!checkCutsException(6)) trailing_lep_mT_hist->fill(trailing_lep_mT/GeV);
-      if (!checkCutsException(7)) higgs_mT_hist->fill(higgs_mT/GeV);
-      dphi_hist->fill(dphi);
-      cos_dphi->fill(cos(dphi));
+	      //fill each histogram with events that pass all but the one cut associated with variable
+	      if (!checkCutsException(1)) leading_lep_PT->fill(leptons[0].pT()/GeV);
+	      if (!checkCutsException(2)) trailing_lep_PT->fill(leptons[1].pT()/GeV);
+	      if (!checkCutsException(3)) leading_lep_eta->fill(leptons[0].abseta());
+	      if (!checkCutsException(3)) trailing_lep_eta->fill(leptons[1].abseta());
+	      if (!checkCutsException(4)) dilep_mass->fill(LL.mass()/GeV);
+	      if (!checkCutsException(5)) dilep_PT->fill(LL.pT()/GeV);
+	      if (!checkCutsException(6)) trailing_lep_mT_hist->fill(trailing_lep_mT/GeV);
+	      if (!checkCutsException(7)) higgs_mT_hist->fill(higgs_mT/GeV);
+	      dphi_hist->fill(dphi);
+	      cos_dphi->fill(cos(dphi));
 
-      //vetoEvent if event fails any of the cuts
-      if (checkCuts()) vetoEvent;    
-      
-      //fill histograms (if event not been vetoed)       
-      acc_H_PT->fill(higgs.pT()/GeV);                                                                   
-      acc_N_jets->fill(jets30.size());                                                
+	      //vetoEvent if event fails any of the cuts
+	      if (checkCuts()) vetoEvent;    
+	      
+	      //fill histograms (if event not been vetoed)       
+	      acc_H_PT->fill(higgs.pT()/GeV);                                                                   
+	      acc_N_jets->fill(jets30.size());
+      }                                                      
     }
 
     /// Normalise histograms etc., after the run
