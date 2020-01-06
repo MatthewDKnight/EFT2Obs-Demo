@@ -35,7 +35,7 @@ for i in range(len(pars)):
 		if i!=j and j>i:
 			vals = list(initvals)
 			vals[i] = pars[i]['step']
-			vals[j] = pars[i]['step']
+			vals[j] = pars[j]['step']
 			output.extend(PrintBlock(pars, vals, 'rw%s' % current_i))
 			current_i += 1			
 
