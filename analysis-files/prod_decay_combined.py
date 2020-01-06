@@ -19,7 +19,7 @@ def decomposeTerm(term):
 	parameter(s).
 	"""
 	term = term.replace("*", "") #remove *
-	#print(term)
+	print(term)
 	#find where the first parameter by finding first lowercase letter in string
 	for i in range(len(term)):
 		if ord(term[i])>97 and ord(term[i])<122: #use ascii
@@ -32,10 +32,12 @@ def decomposeTerm(term):
 	
 	#make list of EFT parameters in term
 	params = second_half.split(" ", 1)
-	if params[1] == "": #if only one term
-		del params[1]
-	else:
-		params[1] = params[1].replace(" ", "")
+	#print(params)
+	if len(params) == 2:
+		if params[1] == "": #if only one term
+			del params[1]
+		else:
+			params[1] = params[1].replace(" ", "")
 
 	#add exception for cG and cA
 	#exceptions = ["cG", "cA"]
@@ -50,7 +52,7 @@ prod_bin_names=[]
 decay_bin_names=[]
 prod_equations=[]
 decay_equations = []
-with open("prod_single_default.txt") as prod:
+with open("prod_estimated_default.txt") as prod:
 	prod_content = prod.readlines()
 	
 for i in prod_content:
@@ -58,7 +60,7 @@ for i in prod_content:
 	prod_equation = i.split(':')[1]
 	prod_equations.append(prod_equation)
 
-with open("decay_single_default.txt") as decay:
+with open("decay_estimated_default.txt") as decay:
 	decay_content = decay.readlines()
 
 for i in decay_content:
@@ -107,7 +109,7 @@ for k in range(len(prod_split_equations)):
 print(combined_split_equations)
 				
 	
-with open("single_default_combined.txt", "w") as file:
+with open("estimated_default_combined.txt", "w") as file:
 		for i in range(len(combined_split_equations)):
 			split_equation = combined_split_equations[i]
 
