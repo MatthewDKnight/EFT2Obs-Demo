@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import json
 from parameter_conversion import params as param_convert #dictionary to switch naming conventions
+import os.path
 
 def getBins(hist):
 	bin_values = []
@@ -39,6 +40,7 @@ def plot(hist):
 def extractCoeff(hists):
 	bin_values = [getBins(hist) for hist in hists] #values of bins for each reweighting
 	bin_values = np.array(bin_values)
+	print(bin_values)
 	bin_values = bin_values/bin_values[0] #divide by SM value -> yields
 	bin_values = bin_values - 1 #now left with INT and BSM terms
 
@@ -46,7 +48,7 @@ def extractCoeff(hists):
 	no_bins = len(bin_values[0])
 	
 	#print(no_params)
-	#print(no_bins)
+	#print(bin_values)
 
 	#create a to carry all coefficients of for every bin
 	coeffs = [ [[0.0,0.0] for i in range(no_params)] for j in range(no_bins)]
@@ -78,22 +80,33 @@ def extractCoeff(hists):
 			if i!=j and j>i:
 				step1 = pars[i]['step']
 				step2 = pars[j]['step']
+				#print(len(bin_values))
+				#print(no_bins)
+				#print(counter)
 				for k in range(no_bins):
 					mu = bin_values[counter][k]
 				
 					#remove linear and quadratic (not cross) terms
 					mu += -coeffs[k][i][0]*step1 -coeffs[k][i][1]*step1**2 -coeffs[k][j][0]*step2 - coeffs[k][j][1]*step2**2
 					cross_term = mu / (step1*step2)
- 					print(cross_term)	
+ 					#print(cross_term)	
 					cross_terms[k][i][j] = cross_term
 				counter += 1
 
 	return coeffs, cross_terms
 		
 def writeTextFile(coeffs, cross_terms, filename="equations.txt"):
-	with open(filename, "w") as file:
+	#print(coeffs)
+	if os.path.isfile(filename):
+		mode="a"
+	else:
+		mode="w"
+	
+	with open(filename, mode) as file:
 		for j in range(len(coeffs)): #for each bin
 			bin = coeffs[j]	     #the A and B coeffs for every parameter for this bin
+			#print(len(coeffs))
+			#print(bin_names)
 			string = "%s:1"%bin_names[j]
 
 			for i in range(len(bin)): #for each parameter
@@ -149,7 +162,7 @@ def orderHists(hists):
                                 hists[i], hists[i+1] = hists[i+1], hists[i]
         return hists
 
-aos = yoda.read("SimpleHiggs.yoda", asdict = False)
+aos = yoda.read("../decay_estimated_default.yoda", asdict = False)
 H_PT_hists = [h for h in aos if h.path.startswith("/SimpleHiggs/H_PT")]
 H_PT_hists = H_PT_hists[1:] #get rid of first histogram
 
@@ -170,19 +183,26 @@ N_jets_hists = orderHists(N_jets_hists)
 acc_N_jets_hists = orderHists(acc_N_jets_hists)
 
 
+with open("../config.json") as jsonfile:
+	pars = json.load(jsonfile)
+
 #Bins for pT are 0,20,45,80,120,200
 bin_edges = [0,20,45,80,120,200]
 bin_names = ["GG2H_PTH_0_20", "GG2H_PTH_20_45", "GG2H_PTH_45_80", "GG2H_PTH_80_120", "GG2H_PTH_120_200", "GG2H_PTH_GT200"] 
 bin_names.append("Total")
 
-with open("config.json") as jsonfile:
-	pars = json.load(jsonfile)
-
 coeffs, cross_terms = extractCoeff(H_PT_hists)
-writeTextFile(coeffs, cross_terms, "equations.txt")
+writeTextFile(coeffs, cross_terms, "decay_estimated_default.txt")
 
-coeffs, cross_terms = extractCoeff(acc_H_PT_hists)
-writeTextFile(coeffs, cross_terms, "equations_acc.txt")
+bin_edges = [0,1,2,3,4]
+bin_names = ["0j", "1j", "2j", "3j", ">3j"]
+bin_names.append("Total")
+
+coeffs2, cross_terms2 = extractCoeff(N_jets_hists)
+writeTextFile(coeffs2, cross_terms2, "decay_estimated_default.txt")
+
+#coeffs, cross_terms = extractCoeff(acc_H_PT_hists)
+#writeTextFile(coeffs, cross_terms, "equations_acc.txt")
 
 
 #plot(hists[0])
