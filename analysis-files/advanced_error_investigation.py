@@ -119,9 +119,17 @@ def minimize_f_sum(process_name, POIs):
 			print(name_ordering[j])
 			print(f_BSM(min_loc.x, A, B, i, j))
 	print(A)
-	print(B)
+	print(B)	 
 	return min_loc.x, f_min, name_ordering
-print (minimize_f_sum('ggH', ['cG', 'c2G', 'c3G', 'tcG', 'tc3G']))
+
+estimates= minimize_f_sum('hww', ['cWWMinuscB', 'cHW', 'tcHW'])
+print (estimates)
+
+file1 = open("decay_default_estimates.txt","w")
+L = [str(estimates[2][i]) + ": " + str(estimates[0][i]) + "\n"  for i in range(len(estimates[0]))]
+print(L)
+file1.writelines(L) 
+file1.close() 
 
 #plt.plot(x,f_sum)
 #plt.plot([min_loc,min_loc],[0,1])
