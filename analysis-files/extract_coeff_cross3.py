@@ -162,7 +162,7 @@ def orderHists(hists):
                                 hists[i], hists[i+1] = hists[i+1], hists[i]
         return hists
 
-aos = yoda.read("../decay_estimated_default.yoda", asdict = False)
+aos = yoda.read("../decay_single_default.yoda", asdict = False)
 H_PT_hists = [h for h in aos if h.path.startswith("/SimpleHiggs/H_PT")]
 H_PT_hists = H_PT_hists[1:] #get rid of first histogram
 
@@ -192,18 +192,18 @@ bin_names = ["GG2H_PTH_0_20", "GG2H_PTH_20_45", "GG2H_PTH_45_80", "GG2H_PTH_80_1
 bin_names.append("Total")
 
 coeffs, cross_terms = extractCoeff(H_PT_hists)
-writeTextFile(coeffs, cross_terms, "decay_estimated_default.txt")
+writeTextFile(coeffs, cross_terms, "decay_single_default.txt")
 
 coeffs, cross_terms = extractCoeff(acc_H_PT_hists)
-writeTextFile(coeffs, cross_terms, "decay_estimated_default_acceptance.txt")
+writeTextFile(coeffs, cross_terms, "decay_single_default_acceptance.txt")
 
 bin_edges = [0,1,2,3,4]
-bin_names = ["0j", "1j", "2j", "3j", ">3j"]
+bin_names = ["GG2H_NJETS_0", "GG2H_NJETS_1", "GG2H_NJETS_2", "GG2H_NJETS_3", "GG2H_NJETS_GT3"]
 bin_names.append("Total")
 
 coeffs2, cross_terms2 = extractCoeff(N_jets_hists)
-writeTextFile(coeffs2, cross_terms2, "decay_estimated_default.txt")
+writeTextFile(coeffs2, cross_terms2, "decay_single_default.txt")
 
 coeffs2, cross_terms2 = extractCoeff(acc_N_jets_hists)
-writeTextFile(coeffs2, cross_term2, "decay_estimated_acceptance.txt")
+writeTextFile(coeffs2, cross_terms2, "decay_single_acceptance.txt")
 
