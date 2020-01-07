@@ -73,7 +73,8 @@ def f_sum(x, *args):
 	for i in range(len(A)):
 		f_sum+=f_A(x, A, B, i)
 		for j in range(len(A)):
-			f_sum+=f_B(x, A, B, i,j)
+			if j<=i:
+				f_sum+=f_B(x, A, B, i,j)
 	return f_sum
 				
 
@@ -88,22 +89,22 @@ def f_sum(x, *args):
 def minimize_f_sum(process_name, POIs):
 	functions, name_ordering, scaling_list = initialiseScalingFunctions(POIs=POIs)
 	if process_name in functions.keys():
-		A=functions[process_name][0]
-        	B=functions[process_name][1]
+		A=abs(functions[process_name][0])
+        	B=abs(functions[process_name][1])
 	else:
 		print ("Process name not in list of known processes")
 	for a in range(len(A)):
 		if A[a]==0:
-			A[a]=0.1
+			A[a]=0.01
 		for b in range(len(A)):
 			if B[a][b]==0:
-				B[a][b]=0.1 
+				B[a][b]=0.01 
 	estimates=[0 for i in range(len(scaling_list))]
 	f_min=9999
 	for i in range(-2,3):
 		guess=10**i
 		init=[guess for j in range(len(scaling_list))]
-		min_loc = scipy.optimize.minimize(f_sum, init, args=[A, B], tol=1e-8)
+		min_loc = scipy.optimize.minimize(f_sum, init, args=[A, B], tol=1e-8, bounds=[(0,None), (0,None)])
 		if f_sum(min_loc.x, [A, B])<f_min:
 			estimates=min_loc.x
 			f_min=f_sum(estimates, [A, B])
@@ -122,12 +123,12 @@ def minimize_f_sum(process_name, POIs):
 	print(B)	 
 	return min_loc.x, f_min, name_ordering
 
-estimates= minimize_f_sum('hww', ['cWWMinuscB', 'cHW', 'tcHW'])
+estimates= minimize_f_sum('hww', ['cWWMinuscB', 'cHW'])
 print (estimates)
 
 file1 = open("decay_default_estimates.txt","w")
 L = [str(estimates[2][i]) + ": " + str(estimates[0][i]) + "\n"  for i in range(len(estimates[0]))]
-print(L)
+#print(L)
 file1.writelines(L) 
 file1.close() 
 
