@@ -1,3 +1,5 @@
+import sys
+
 def splitRow(string):
 	"""
 	Will split a string into terms that start with '+' or '-'.
@@ -52,7 +54,7 @@ prod_bin_names=[]
 decay_bin_names=[]
 prod_equations=[]
 decay_equations = []
-with open("prod_estimated_default.txt") as prod:
+with open(sys.argv[1]) as prod:
 	prod_content = prod.readlines()
 	
 for i in prod_content:
@@ -60,7 +62,7 @@ for i in prod_content:
 	prod_equation = i.split(':')[1]
 	prod_equations.append(prod_equation)
 
-with open("decay_estimated_default.txt") as decay:
+with open(sys.argv[2]) as decay:
 	decay_content = decay.readlines()
 
 for i in decay_content:
@@ -109,7 +111,7 @@ for k in range(len(prod_split_equations)):
 print(combined_split_equations)
 				
 	
-with open("estimated_default_combined.txt", "w") as file:
+with open(sys.argv[3], "w") as file:
 		for i in range(len(combined_split_equations)):
 			split_equation = combined_split_equations[i]
 

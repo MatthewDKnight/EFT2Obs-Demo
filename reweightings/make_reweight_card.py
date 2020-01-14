@@ -1,3 +1,10 @@
+"""
+This file will produce a reweight card to be used by MG5. It reads the config.json
+file to find out what parameters wish to be varied. Using the parameter's default
+values, it then sets a reweighting at a half step and full step for each parameter.
+It does NOT include reweightings neccessary for calculating cross terms.
+"""
+
 import json
 import sys
 

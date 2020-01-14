@@ -1,6 +1,7 @@
 """
-Generates the reweight card for the the validation of the quadratic
-approximation. For each parameter c_j, there will be 11 reweightings
+Generates the reweight card needed for acceptance_quad_log.py which
+checks whether the acceptance follows a quadratic form.
+For each parameter c_j, there will be 11 reweightings
 with c_j = 0,0.1,0.2,...,1, and all other parameters set to 0.
 """
 

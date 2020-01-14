@@ -38,14 +38,14 @@ pt_bin_names = ["GG2H_PTH_0_20", "GG2H_PTH_20_45", "GG2H_PTH_45_80", "GG2H_PTH_8
 njet_bin_edges = [0,1,2,3,4]
 njet_bin_names = ["0j", "1j", "2j", "3j", ">3j"]
 
-bounds = {"cww":[-0.015,0.015], "chw":[-0.012,0.016], "cphl":[-0.05,0.05],"Cross":[-1.0,1.0]}
+bounds = {"cww":[-15e-2, 15e-2], "chw":[-12e-2,16e-2], "cww and chw":[-1.0,1.0]}
 
 """
 Plot the total acceptance as a function of the parameters to test for the form of the function
 """
 SM_acc = acc_hists[0].sumW()/no_acc_hists[0].sumW()
 acceptance_arrays = {}
-params = ["cww","chw","cphl","Cross"]
+params = ["cww","chw","cww and chw"]
 for i in range(len(params)):
 	param = params[i]
 	
@@ -70,13 +70,24 @@ for i in range(len(params)):
 	x = [(bound[0] + (interval/8)*i) for i in range(9)]
 
 	plt.scatter(x, normed_acceptance)
+	plt.xlabel(param)
+	plt.ylabel("Acceptance scaling")
+	plt.savefig("acceptance_Graphs/%s.png"%param) 
 	plt.show()
 
-y1 = acceptance_arrays["cww"] + acceptance_arrays["chw"] + acceptance_arrays["cphl"] - 2
-y2 = acceptance_arrays["Cross"]
+y1 = acceptance_arrays["cww"] + acceptance_arrays["chw"] - 1
+y2 = acceptance_arrays["cww and chw"]
 plt.plot(x, y1, label="Total")
-plt.plot(x, y2, label="Cross")
-plt.legend()
+plt.plot(x, y2, label="cww and chw")
+plt.legend(loc="lower right")
+plt.ylabel("Acceptance scaling")
+plt.savefig("acceptance_Graphs/comparison.png")
+plt.show()
+
+plt.plot(x, y2-y1, label="(cww and chw) minus Total")
+plt.ylabel("Acceptance scaling")
+plt.legend(loc="lower right")
+plt.savefig("acceptance_Graphs/cww and chw minus total.png")
 plt.show()
 
 """
@@ -108,7 +119,7 @@ acc_N_jets_hists = [h for h in aos if h.path.startswith("/SimpleHiggs/acc_N_jets
 acc_N_jets_hists = acc_N_jets_hists[1:] #get rid of first histogram
 orderHists(acc_N_jets_hists)
 
-params = ["cww","chw","cphl"]
+params = ["cww","chw"]
 max_acceptances_holder = []
 for k in range(len(params)):
         param = params[k]
@@ -129,24 +140,28 @@ for k in range(len(params)):
 		acceptances = []
 		for j in range(no_reweightings):
 			acceptances.append(acc_H_PT_hists_temp[j][i].sumW/H_PT_hists_temp[j][i].sumW)
-		max_acceptances.append(max(acceptances)/SM_acceptance)
+		acceptances = np.array(acceptances)
+		max_acceptances.append(max(abs(acceptances))/SM_acceptance)
 	SM_acceptance = acc_H_PT_hists[0].overflow.sumW/H_PT_hists[0].overflow.sumW
         acceptances = []
         for j in range(no_reweightings):
                 acceptances.append(acc_H_PT_hists_temp[j].overflow.sumW/H_PT_hists_temp[j].overflow.sumW)
-        max_acceptances.append(max(acceptances)/SM_acceptance)
+        acceptances = np.array(acceptances)
+	max_acceptances.append(max(abs(acceptances))/SM_acceptance)
 
 	for i in range(no_njet_bins):
 		SM_acceptance = acc_N_jets_hists[0][i].sumW/N_jets_hists[0][i].sumW
 		acceptances = []
 		for j in range(no_reweightings):
 			acceptances.append(acc_N_jets_hists_temp[j][i].sumW/N_jets_hists_temp[j][i].sumW)
-		max_acceptances.append(max(acceptances)/SM_acceptance)
+		acceptances = np.array(acceptances)
+		max_acceptances.append(max(abs(acceptances))/SM_acceptance)
 	SM_acceptance = acc_N_jets_hists[0].overflow.sumW/N_jets_hists[0].overflow.sumW
         acceptances = []
         for j in range(no_reweightings):
                acceptances.append(acc_N_jets_hists_temp[j].overflow.sumW/N_jets_hists_temp[j].overflow.sumW)
-        max_acceptances.append(max(acceptances)/SM_acceptance)
+        acceptances = np.array(acceptances)
+	max_acceptances.append(max(abs(acceptances))/SM_acceptance)
 	
 	print("------------------------------------")
 	print("Parameter: %s"%param)
@@ -156,7 +171,7 @@ for k in range(len(params)):
 	max_acceptances_holder.append(np.array(max_acceptances))
 
 #sum acceptance effect over all parameters
-max_acceptances = max_acceptances_holder[0] + max_acceptances_holder[1] + max_acceptances_holder[2] - 2
+max_acceptances = max_acceptances_holder[0] + max_acceptances_holder[1] - 1
 print("---------------------------------")
 print("Total")
 for i in range(len(bin_names)):
