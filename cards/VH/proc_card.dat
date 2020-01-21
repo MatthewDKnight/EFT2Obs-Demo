@@ -1,0 +1,16 @@
+import model HEL_UFO_FMZ
+
+define j2 = u c d s u~ c~ d~ s~
+define v = z w+ w-
+#generate p p > h QED<=0, h > l+ l- vl vl~ / t b t~ b~ a z j l+ l- vl vl~ NP<=1 @0
+generate p p > z h, z > l+ l-, h > b b~ @0
+#add process p p > z h, z > vl vl~ , h > l+ l- vl vl~ / t b t~ b~ a z j l+ l- vl vl~ @0
+#add process p p > h j / j, h > l+ l- vl vl~ / t b t~ b~ a z j l+ l- vl vl~ NP<=1 @1
+#add process p p > h j / j NP<=1 @1
+#add process p p > h j j / j l+ l- vl vl~ h a W+ W- Z NP<=1 @2
+
+#generate p p > h NP<=1
+#generate p p > h j / j NP<=1
+#generate p p > h j j / j l+ l- vl vl~ h a W+ W- Z NP<=1
+
+output VH
