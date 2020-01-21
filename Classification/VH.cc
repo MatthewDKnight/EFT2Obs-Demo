@@ -28,7 +28,9 @@ namespace Rivet {
 
   const bool acceptance_on = 0;
 
-  bool cuts [8];
+  bool cuts_0 [1];
+  bool cuts_1 [3];
+  bool cuts_2 [4];
 
   double m_sumw;
 
@@ -65,7 +67,7 @@ namespace Rivet {
       // FinalState of prompt photons and bare muons and electrons in the event
       PromptFinalState photons(Cuts::abspid == PID::PHOTON);
       PromptFinalState bare_leps(Cuts::abspid == PID::MUON || Cuts::abspid == PID::ELECTRON);
-     
+      declare(bare_leps, "bare_leps"); 
       // dress the prompt bare leptons with prompt photons within dR < 0.1
       DressedLeptons dressed_leps(photons, bare_leps, lep_cone_size);
       declare(dressed_leps, "leptons");
@@ -94,6 +96,8 @@ namespace Rivet {
       book(acceptance, "acceptance", {0,1,2,3,4,5,6,7});
       book(lepton_no, "lepton_no", {0,1,2,3,4,5,6,7,8,9,10});
       book(V_mass, "V_mass", 50, 0, 200);
+      book(V_PT, "V_PT", {0, 75, 150, 250, 400});
+      book(acc_V_PT, "acc_V_PT", {0, 75, 150, 250, 400});
     }
 
     bool originateFrom(const Particle& p, const Particles& ptcls ) {
@@ -110,21 +114,8 @@ namespace Rivet {
         Particles ptcls = {p2}; return originateFrom(p,ptcls);
     }
 
+    /*
     void setCuts(const Event& event, Particles leptons, FourMomentum LL, double trailing_lep_mT, double higgs_mT) {
-	//find extra variables for cutting                                      
-	/*             
-        Particles leptons = apply<DressedLeptons>(event, "leptons").particlesByPt(); 
-        FourMomentum LL = (leptons[0].momentum() + leptons[1].momentum());
-                                                                                     
-        FourMomentum p_miss = apply<MissingMomentum>(event, "Met").missingMomentum();
-                                                                                     
-        double dphi = deltaPhi(leptons[1], p_miss);
-        double trailing_lep_mT = sqrt(2*leptons[1].pT()*p_miss.pT() * (1-cos(dphi)));
-                                                                                     
-        dphi = deltaPhi(LL, p_miss);
-        double higgs_mT = sqrt(2*LL.pT()*p_miss.pT() * (1-cos(dphi)));               
-	*/
-
 	//set cuts	
 	cuts[0] = (leptons[0].charge() == leptons[1].charge()) || (leptons[0].abspid() == leptons[1].abspid());
 	cuts[1] = leptons[0].pT() < leading_lep_min_pT;
@@ -135,21 +126,105 @@ namespace Rivet {
 	cuts[6] = trailing_lep_mT < trailing_lep_min_mT;
 	cuts[7] = higgs_mT < higgs_min_mT;
     }
+    */   
 
+    void LepCuts_0(const Event& event, FourMomentum p_miss) {
+	//find extra variables for cutting                                      
+
+	//set cuts
+	cuts_0[0] = p_miss.pT() < 170*GeV;	
+    }
+
+
+    void LepCuts_1(const Event& event, FourMomentum p_miss, Particles temp_leptons, double dphi) {
+	//find extra variables for cutting                                      
+
+	//set cuts
+	FourMomentum V = p_miss + temp_leptons[0];
+	cuts_1[0] = V.pT() < 100*GeV;
+
+	for (const Particle p : temp_leptons) {
+          if (((p.pid()) == 11) || ((p.pid()) == -11)) {
+		cuts_1[1] = temp_leptons[0].pT() < 30*GeV;
+          } else if (((p.pid()) == 13) || ((p.pid()) == -13)) {
+		cuts_1[1] = temp_leptons[0].pT() < 25*GeV;
+	  } else {
+		cuts_1[1] = 1;
+	  }
+	cuts_1[2] = dphi > 2; 
+        }
+     }
+
+    void LepCuts_2(const Event& event, Particles temp_leptons) {
+	//find extra variables for cutting                                      
+
+	//set cuts
+	bool pair_found = 0;
+      	Particle leading_lep;
+      	Particle trailing_lep;
+      	if (temp_leptons.size()>1) {
+        	leading_lep = temp_leptons[0];
+        	for (const Particle p: temp_leptons) {
+          		if (!((p.pid())==(-leading_lep.pid()))) continue;
+          		trailing_lep = p;
+          		pair_found = 1;
+          		break;
+        	}	
+      	}
+
+	if (pair_found) {
+	  cuts_2[0] = 0;
+          FourMomentum LL = (leading_lep.momentum() + trailing_lep.momentum());
+          V_mass->fill(LL.mass());
+        
+	  for (const Particle p : temp_leptons){
+	    if (((p.pid()) == 13) || ((p.pid()) == -13)) {
+	      cuts_2[1] = (LL.pT() < 50*GeV || LL.pT() > 150*GeV);
+	    } else if (((p.pid()) == 11) || ((p.pid()) == -11)) {
+	      cuts_2[1] = LL.pT() < 150*GeV;
+	    } else {
+	      cuts_2[1]= 1;
+	    }
+	  cuts_2[2]= (leading_lep.pT() < 20* GeV) || (trailing_lep.pT() < 20*GeV);
+	  cuts_2[3] = (LL.mass() < 75*GeV) || (LL.mass() > 105*GeV);
+	  }
+	} else {
+	  cuts_2[0] = 1;
+	}
+	 
+    }
+
+    /*
     //goes through cuts, if event failed any cuts, vetoEvent
     void applyVeto() {
-	for (bool cut : cuts) {
+        for (bool cut : cuts) {
 		if (cut) vetoEvent;
 	}
     }
+    */
 
-    bool checkCuts() {
-	for (bool cut : cuts) {
+    bool checkCuts_0() {
+	for (bool cut : cuts_0) {
 		if (cut) return true;
 	}
 	return false;
     }
 
+    bool checkCuts_1() {
+        for (bool cut : cuts_1) {
+                if (cut) return true;
+        }
+        return false;
+    }
+
+    bool checkCuts_2() {
+        for (bool cut : cuts_2) {
+                if (cut) return true;
+        }
+        return false;
+    }
+
+    /*
     //checks all cuts with one exception
     bool checkCutsException(int exception_index) {
     	for (int i = 0; i < 8; i++) {
@@ -159,6 +234,7 @@ namespace Rivet {
 	}
 	return false;	
     }
+    */
 
     /// Perform the per-event analysis
     void analyze(const Event& event) {
@@ -172,6 +248,8 @@ namespace Rivet {
           if (!PID::isHiggs(ptcl->pdg_id())) continue;
           higgs = Particle(ptcl);
       }
+
+      //grav vector boson
       Particle V;
       for (const GenParticle *ptcl : Rivet::HepMCUtils::particles(event.genEvent())){
           if (((ptcl->pdg_id()) != 23) && ((ptcl->pdg_id()) != 24) && ((ptcl->pdg_id()) != -24)) continue;
@@ -190,33 +268,48 @@ namespace Rivet {
       jets.calc(hadrons); 
       Jets jets30 = jets.jetsByPt(Cuts::pT>jet_min_pT && Cuts::abseta<jet_max_eta);
 
-      Particles temp_leptons = apply<DressedLeptons>(event, "leptons").particlesByPt();
-
-      Particles V_leptons;
-      for (const Particle &p : temp_leptons) {
-          if ((originateFrom(p,V)) {
-	    V_leptons += p;
-	  }
-      }
-
-      FourMomentum LL = (V_leptons[0].momentum() + V_leptons[1].momentum());
-
       //fill histograms before acceptance cuts
       H_PT->fill(higgs.pT()/GeV);
+      V_PT->fill(V.pT()/GeV);
       N_jets->fill(jets30.size());
-      V_mass->fill(LL.mass());
-      
+
+      //start acceptance
+      Particles temp_leptons = apply<PromptFinalState>(event, "bare_leps").particlesByPt(Cuts::pT>20*GeV && Cuts::abseta<2.5);  
+
+      lepton_no->fill(temp_leptons.size());
+      								  
+      //fill histograms (if event not been vetoed)       
+      if (temp_leptons.size() == 0) {
+	FourMomentum p_miss = apply<MissingMomentum>(event, "Met").missingMomentum();
+        LepCuts_0(event, p_miss);
+	if (checkCuts_0()) vetoEvent;
+        acceptance->fill(0);
+      } else if (temp_leptons.size() == 1) {
+	FourMomentum p_miss = apply<MissingMomentum>(event, "Met").missingMomentum();
+	double dphi = deltaPhi(temp_leptons[0], p_miss);
+	LepCuts_1(event, p_miss, temp_leptons, dphi);
+	if (checkCuts_1()) vetoEvent;
+        acceptance->fill(1);
+      } else {
+	LepCuts_2(event, temp_leptons);
+	if (checkCuts_2()) vetoEvent;
+        acceptance->fill(2);
+      } 
+
+
+      acc_H_PT->fill(higgs.pT()/GeV);
+      acc_V_PT->fill(V.pT()/GeV);                                                                   
+      acc_N_jets->fill(jets30.size());
     }
 
     /// Normalise histograms etc., after the run
     void finalize() {
       double sf = m_sumw>0?1.0/m_sumw:1.0;
-      for (auto hist:{H_PT, acc_H_PT, N_jets, acc_N_jets}) scale(hist, sf);
+      for (auto hist:{H_PT, acc_H_PT, N_jets, acc_N_jets, V_PT, acc_V_PT}) scale(hist, sf);
     }
-
     //@}
 
-
+    
     /// @name Histograms
     //@{
     //Histo1DPtr leptons_PT;
@@ -238,6 +331,8 @@ namespace Rivet {
     Histo1DPtr dphi_hist;
     Histo1DPtr cos_dphi;
     Histo1DPtr V_mass;
+    Histo1DPtr V_PT;
+    Histo1DPtr acc_V_PT;
     //@}
 
 
