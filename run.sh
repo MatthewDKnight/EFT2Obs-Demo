@@ -35,6 +35,7 @@ if [ -d "${MG_DIR}/${PROCESS}/Events/${RUNLABEL}" ]; then rm -r ${MG_DIR}/${PROC
 popd
 
 #rivet -v --analysis=HiggsTemplateCrossSectionsStage1 "${TMPDIR}/fifo.hepmc" -o Rivet.yoda
-rivet -v --analysis=SimpleHiggs "${TMPDIR}/fifo.hepmc" -o "${SAVEDIR}.yoda"
-python save_info.py ${SAVEDIR}
+#rivet -v --analysis=SimpleHiggs "${TMPDIR}/fifo.hepmc" -o "${SAVEDIR}.yoda"
+rivet -v --analysis=VH_bb "${TMPDIR}/fifo.hepmc" -o "${SAVEDIR}.yoda"
+python save_info.py ${SAVEDIR} ${PROCESS}
 #yoda2root -t Rivet.yoda

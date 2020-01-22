@@ -1,11 +1,13 @@
 #import check_param_card as param_card_mod
 
-CARDS_DIR="cards/ggF/"
-
 import os
 import sys
 
-sys.path.append(os.path.join(os.environ['MG_DIR'], "ggF", 'bin', 'internal'))
+production_mode = sys.argv[2]
+
+CARDS_DIR = "cards/%s/"%production_mode
+
+sys.path.append(os.path.join(os.environ['MG_DIR'], production_mode, 'bin', 'internal'))
 import check_param_card as param_card_mod
 
 param_card = param_card_mod.ParamCard(CARDS_DIR+"param_card.dat")
