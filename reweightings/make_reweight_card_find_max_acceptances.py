@@ -9,7 +9,10 @@ import sys
 
 bounds = {"cww":[-15e-2, 15e-2],
 	  "chw":[-12e-2, 16e-2],
-	  "cphl":[-5e-2, 5e-2]}	  
+	  "cphl":[-5e-2, 5e-2],
+	  "cb":[-15e-2, 15e-2],
+	  "ca":[-10e-4, 10e-4],
+	  "chb":[-4.5e-2, 7.5e-2]}	  
 
 def PrintBlock(pars, vals, label):
     res = []
