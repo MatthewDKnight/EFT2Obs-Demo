@@ -15,7 +15,7 @@ ANALYSIS=$3
 
 ### SET ENVIRONMENT VARIABLES HERE
 RUNLABEL="pilotrun"
-TMPDIR=/home/hep/mdk16/Masters/EFT2Obs-Demo2
+TMPDIR=/home/hep/jd2616/EFT2Obs-Demo
 ###
 
 cp cards/${PROCESS}/{param,reweight,run,pythia8}_card.dat ${MG_DIR}/${PROCESS}/Cards/
