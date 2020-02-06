@@ -26,9 +26,9 @@ namespace Rivet {
 
   const double lep_cone_size = 0.1;
 
-  const bool acceptance_on = 0;
+  const bool acceptance_on = 1;
 
-  bool cuts [8];
+  bool cuts [10];
 
   double m_sumw;
 
@@ -93,6 +93,8 @@ namespace Rivet {
 
       book(acceptance, "acceptance", {0,1,2,3,4,5,6,7});
       book(lepton_no, "lepton_no", {0,1,2,3,4,5,6,7,8,9,10});
+      book(leading_additional_lep_PT, "leading_additional_lep_PT", 25,0,75);
+      book(b_jet_PT, "b_jet_PT", 25, 0, 150);
     }
 
     bool originateFrom(const Particle& p, const Particles& ptcls ) {
@@ -109,7 +111,7 @@ namespace Rivet {
         Particles ptcls = {p2}; return originateFrom(p,ptcls);
     }
 
-    void setCuts(const Event& event, Particles leptons, FourMomentum LL, double trailing_lep_mT, double higgs_mT) {
+    void setCuts(const Event& event, Particles leptons, FourMomentum LL, double trailing_lep_mT, double higgs_mT, Jets eta_cut_jets) {
 	//find extra variables for cutting                                      
 	/*             
         Particles leptons = apply<DressedLeptons>(event, "leptons").particlesByPt(); 
@@ -133,6 +135,25 @@ namespace Rivet {
 	cuts[5] = LL.pT() < dilep_min_pT;
 	cuts[6] = trailing_lep_mT < trailing_lep_min_mT;
 	cuts[7] = higgs_mT < higgs_min_mT;
+	
+	if (leptons.size() > 2) {
+			if (leptons[2].pT() > 10*GeV) {
+				cuts[8] = 1;
+			} else {
+				cuts[8] = 0;
+			}
+	}		
+	cuts[9] = 0;
+	if (eta_cut_jets.size() > 0) {
+		for(unsigned int i = 0; i < eta_cut_jets.size(); i++) {
+			if (eta_cut_jets[i].bTagged()) {
+				if (eta_cut_jets[i].pT() > 20*GeV) {
+						cuts[9] = 1;
+						break;
+				}
+			} 
+		}
+	}
     }
 
     //goes through cuts, if event failed any cuts, vetoEvent
@@ -141,17 +162,33 @@ namespace Rivet {
 		if (cut) vetoEvent;
 	}
     }
-
+    /*	
     bool checkCuts() {
 	for (bool cut : cuts) {
 		if (cut) return true;
 	}
 	return false;
     }
+    */
+
+    bool checkInitialCuts() {
+        for (int i = 0; i < 8; i++) {
+                if (cuts[i]) return true;
+        }
+        return false;
+    }
+
+
+    bool checkFinalCuts() {
+	for (int i = 8; i < 10; i++) {
+		if (cuts[i]) return true;
+	}
+	return false;
+    }
 
     //checks all cuts with one exception
     bool checkCutsException(int exception_index) {
-    	for (int i = 0; i < 8; i++) {
+    	for (int i = 0; i < 10; i++) {
 		if (i != exception_index) {
 			if (cuts[i] == true) return true;
 		}
@@ -184,11 +221,7 @@ namespace Rivet {
       jets.calc(hadrons); 
       Jets jets30 = jets.jetsByPt(Cuts::pT>jet_min_pT && Cuts::abseta<jet_max_eta);
       
-      //fill histograms before acceptance cuts
-      H_PT->fill(higgs.pT()/GeV);
-      N_jets->fill(jets30.size());
-
-     
+      Jets eta_cut_jets = jets.jetsByPt(Cuts::abseta<jet_max_eta); 
       if (acceptance_on) { 
 	      //find extra variables for cutting
 	      Particles leptons = apply<DressedLeptons>(event, "leptons").particlesByPt();      
@@ -208,9 +241,10 @@ namespace Rivet {
 	      dphi = deltaPhi(leptons[0], leptons[1]);
 
 	      //find which cuts event passes/fails
-	      setCuts(event, leptons, LL, trailing_lep_mT, higgs_mT);
+	      setCuts(event, leptons, LL, trailing_lep_mT, higgs_mT, eta_cut_jets);
 
 	      //fill each histogram with events that pass all but the one cut associated with variable
+	      
 	      if (!checkCutsException(1)) leading_lep_PT->fill(leptons[0].pT()/GeV);
 	      if (!checkCutsException(2)) trailing_lep_PT->fill(leptons[1].pT()/GeV);
 	      if (!checkCutsException(3)) leading_lep_eta->fill(leptons[0].abseta());
@@ -219,12 +253,36 @@ namespace Rivet {
 	      if (!checkCutsException(5)) dilep_PT->fill(LL.pT()/GeV);
 	      if (!checkCutsException(6)) trailing_lep_mT_hist->fill(trailing_lep_mT/GeV);
 	      if (!checkCutsException(7)) higgs_mT_hist->fill(higgs_mT/GeV);
+	      if (!checkCutsException(8)) 
+		if (leptons.size() > 2) {
+			leading_additional_lep_PT->fill(leptons[2].pT()/GeV);
+		}
+	      
+	      if (!checkCutsException(9)) {
+		bool b_jet_found = 0;
+                if (eta_cut_jets.size() > 0) {
+			for(unsigned int i = 0; i < eta_cut_jets.size(); i++) {
+				if (eta_cut_jets[i].bTagged()) {
+					b_jet_PT->fill(eta_cut_jets[i].pT()/GeV);
+					b_jet_found = 1;
+					break;	
+				}  
+			}
+			if (!b_jet_found) b_jet_PT->fill(0);
+			  
+		}	
+	      }
 	      dphi_hist->fill(dphi);
 	      cos_dphi->fill(cos(dphi));
-
-	      //vetoEvent if event fails any of the cuts
-	      if (checkCuts()) vetoEvent;    
+	      //vetoEvent if event fails any of the cuts not included in xs definition
+	      if (checkInitialCuts()) vetoEvent;    
 	      
+      	      H_PT->fill(higgs.pT()/GeV);
+      	      N_jets->fill(jets30.size());
+
+		
+	      if (checkFinalCuts()) vetoEvent;
+
 	      //fill histograms (if event not been vetoed)       
 	      acc_H_PT->fill(higgs.pT()/GeV);                                                                   
 	      acc_N_jets->fill(jets30.size());
@@ -252,7 +310,8 @@ namespace Rivet {
       N_jets->normalize(crossSection()/picobarn, true);
 
       higgs_PT_acceptance->normalize(crossSection()/picobarn, true);
-      N_jets_acceptance->normalize(crossSection()/picobarn, true);
+     
+ N_jets_acceptance->normalize(crossSection()/picobarn, true);
       
       H_PT->normalize(82.52, true);
       N_jets->normalize(82.52, true);
@@ -285,6 +344,8 @@ namespace Rivet {
     Histo1DPtr higgs_mT_hist;
     Histo1DPtr dphi_hist;
     Histo1DPtr cos_dphi;
+    Histo1DPtr leading_additional_lep_PT;
+    Histo1DPtr b_jet_PT;
     //@}
 
 
